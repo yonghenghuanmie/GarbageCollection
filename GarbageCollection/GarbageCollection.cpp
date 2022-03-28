@@ -9,11 +9,11 @@
 
 #define Export
 using namespace std;
-#include "GabageCollection.h"
+#include "GarbageCollection.h"
 
-GabageCollection* GabageCollection::instance=nullptr;
+GarbageCollection* GarbageCollection::instance=nullptr;
 
-void GabageCollection::Allocate(void **address,int size)
+void GarbageCollection::Allocate(void **address,int size)
 {
 	while(flag.test_and_set());
 	try
@@ -41,13 +41,14 @@ void GabageCollection::Allocate(void **address,int size)
 	}
 	catch(const invalid_argument &e)
 	{
-		FreeGcNode(data.find(address));
+		auto&& iter = data.find(address);
+		FreeGcNode(iter);
 		Output(__func__,":",e.what());
 	}
 	flag.clear();
 }
 
-void GabageCollection::Copy(void **source,void **destination)
+void GarbageCollection::Copy(void **source,void **destination)
 {
 	while(flag.test_and_set());
 	try
@@ -63,13 +64,14 @@ void GabageCollection::Copy(void **source,void **destination)
 	}
 	catch(const invalid_argument &e)
 	{
-		FreeGcNode(data.find(destination));
+		auto&& iter = data.find(destination);
+		FreeGcNode(iter);
 		Output(__func__,":",e.what());
 	}
 	flag.clear();
 }
 
-void GabageCollection::GcThread(GabageCollection *instance)
+void GarbageCollection::GcThread(GarbageCollection *instance)
 {
 	CONTEXT Context={0};
 	Context.ContextFlags=CONTEXT_ALL;
@@ -117,13 +119,13 @@ void GabageCollection::GcThread(GabageCollection *instance)
 	instance->isquit=true;
 }
 
-inline void GabageCollection::FreeGcNode(map<void**,GcNode>::iterator &iter)
+inline void GarbageCollection::FreeGcNode(map<void**,GcNode>::iterator &iter)
 {
 	CloseHandle(iter->second.hThread);
 	iter=data.erase(iter);
 }
 
-void* GabageCollection::IsReadable(void ** address)
+void* GarbageCollection::IsReadable(void ** address)
 {
 	__try
 	{
@@ -135,7 +137,7 @@ void* GabageCollection::IsReadable(void ** address)
 	}
 }
 
-void GabageCollection::IsWriteable(void ** address,void *value)
+void GarbageCollection::IsWriteable(void ** address,void *value)
 {
 	__try
 	{
@@ -147,7 +149,7 @@ void GabageCollection::IsWriteable(void ** address,void *value)
 	}
 }
 
-void GabageCollection::Dispose(bool FreeMemory)
+void GarbageCollection::Dispose(bool FreeMemory)
 {
 	quit=true;
 	while(isquit==false);
@@ -157,13 +159,13 @@ void GabageCollection::Dispose(bool FreeMemory)
 	delete this;
 }
 
-GabageCollection * InitializeGabageCollection()
+GarbageCollection * InitializeGarbageCollection()
 {
-	if(GabageCollection::instance==nullptr)
+	if(GarbageCollection::instance==nullptr)
 	{
-		GabageCollection::instance=new GabageCollection();
-		thread *ThreadObject=new thread(GabageCollection::GcThread,GabageCollection::instance);
+		GarbageCollection::instance=new GarbageCollection();
+		thread *ThreadObject=new thread(GarbageCollection::GcThread,GarbageCollection::instance);
 		ThreadObject->detach();
 	}
-	return GabageCollection::instance;
+	return GarbageCollection::instance;
 }

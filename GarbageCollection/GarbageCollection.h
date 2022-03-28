@@ -10,15 +10,15 @@ typedef struct _GcNode
 	shared_ptr<void> value;
 }GcNode;
 
-class GabageCollection
+class GarbageCollection
 {
 public:
 	virtual void Allocate(void **address,int size);
 	virtual void Copy(void **source,void **destination);
 	virtual void Dispose(bool FreeMemory);
-	static void GcThread(GabageCollection *instance);
+	static void GcThread(GarbageCollection *instance);
 	bool ShowErrorMessage=false;
-	static GabageCollection *instance;
+	static GarbageCollection *instance;
 private:
 	void FreeGcNode(map<void**,GcNode>::iterator &iter);
 	void* IsReadable(void **address);
@@ -48,18 +48,18 @@ private:
 
 typedef struct _VIRTUALTABLE
 {
-	void (*Allocate)(struct _GabageCollection *this,void **address,int size);
-	void (*Copy)(struct _GabageCollection *this,void **source,void **destination);
-	void (*Dispose)(struct _GabageCollection *this,bool FreeMemory);
+	void (*Allocate)(struct _GarbageCollection *this,void **address,int size);
+	void (*Copy)(struct _GarbageCollection *this,void **source,void **destination);
+	void (*Dispose)(struct _GarbageCollection *this,bool FreeMemory);
 }VIRTUALTABLE;
 
-typedef struct _GabageCollection
+typedef struct _GarbageCollection
 {
 	VIRTUALTABLE *VirtualTable;
 	bool ShowErrorMessage;
 	//...
-}GabageCollection;
+}GarbageCollection;
 
 #endif // __cplusplus
 
-declaration GabageCollection * InitializeGabageCollection();
+declaration GarbageCollection * InitializeGarbageCollection();
